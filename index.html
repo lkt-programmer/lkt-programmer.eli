@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人生模拟器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", system-ui, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: #0f1220;
+            overflow-x: hidden;
+            position: relative;
+            padding: 30px 15px;
+        }
+        /* 流动背景动画 */
+        .bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(circle at 20% 25%, #182448 0%, transparent 42%),
+                        radial-gradient(circle at 80% 75%, #14274c 0%, transparent 42%);
+            animation: bgMove 14s ease-in-out infinite alternate;
+        }
+        @keyframes bgMove {
+            0% { transform: scale(1) translate(0,0); }
+            100% { transform: scale(1.18) translate(-18px,18px); }
+        }
+        .wrap {
+            position: relative;
+            z-index: 2;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+        .panel {
+            background: rgba(24, 32, 56, 0.78);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(100,155,255,0.26);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 0 45px rgba(35,95,220,0.16);
+            margin-bottom:20px;
+        }
+        .title {
+            color:#e0ebff;
+            text-align:center;
+            font-size:26px;
+            margin-bottom:28px;
+        }
+        .input-item {
+            margin-bottom:24px;
+        }
+        .label {
+            color:#c5d6ff;
+            font-size:18px;
+            display:block;
+            margin-bottom:10px;
+        }
+        input {
+            width:100%;
+            height:54px;
+            padding:0 16px;
+            border-radius:12px;
+            border:none;
+            font-size:20px;
+            background:#eef4ff;
+            outline:none;
+            transition: 0.3s;
+        }
+        input:focus {
+            box-shadow:0 0 0 3px rgba(72,145,255,0.4);
+        }
+        .btn-group {
+            text-align:center;
+            margin-top:20px;
+        }
+        button {
+            padding:13px 42px;
+            font-size:20px;
+            border-radius:12px;
+            border:2px solid #72a7ff;
+            background:#3478e8;
+            color:white;
+            cursor:pointer;
+            transition: all 0.25s ease;
+            margin:6px;
+        }
+        button:hover {
+            background:#2367d8;
+            transform: translateY(-3px);
+            box-shadow:0 8px 20px rgba(40,110,230,0.35);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        button:disabled{
+            opacity:0.45;
+            cursor:not-allowed;
+            transform:none;
+            box-shadow:none;
+        }
+        /* 属性条可视化 */
+        .attr-box{
+            margin:24px 0;
+        }
+        .attr-row{
+            margin-bottom:16px;
+        }
+        .attr-name{
+            color:#c6d6ff;
+            display:flex;
+            justify-content:space-between;
+            margin-bottom:6px;
+        }
+        .bar-bg{
+            width:100%;
+            height:22px;
+            background:#1a2340;
+            border-radius:11px;
+            overflow:hidden;
+        }
+        .bar-fill{
+            height:100%;
+            border-radius:11px;
+            transition: width 0.6s ease-out;
+        }
+        .bar-emotion{background:#ff7890;}
+        .bar-intel{background:#ffc154;}
+        .bar-energy{background:#42d98b;}
+        .bar-money{background:#54a8ff;}
+        .text-area{
+            margin-top:20px;
+            background:rgba(16,24,44,0.65);
+            border-radius:14px;
+            padding:20px;
+            color:#b4c8ff;
+            min-height:160px;
+            line-height:1.7;
+            white-space:pre-wrap;
+        }
+        .hide{
+            display:none;
+        }
+        .tip{
+            color:#ffdd77;
+            text-align:center;
+            margin:12px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="wrap">
+        <div class="panel" id="startPanel">
+            <div class="title">🎮 人生模拟器</div>
+            <div class="input-item">
+                <label class="label">请输入您的姓名</label>
+                <input type="text" id="nameInput" value="刘凯涛">
+            </div>
+            <div class="input-item">
+                <label class="label">请输入您的年龄</label>
+                <input type="number" id="ageInput" value="18">
+            </div>
+            <div class="btn-group">
+                <button id="startBtn">开始生成角色</button>
+            </div>
+        </div>
+
+        <div class="panel hide" id="gamePanel">
+            <div class="title">角色面板</div>
+            <div class="tip" id="retryTip"></div>
+            <div class="attr-box">
+                <div class="attr-row">
+                    <div class="attr-name"><span>情绪</span><span id="emotionVal">0</span></div>
+                    <div class="bar-bg"><div class="bar-fill bar-emotion" id="barEmotion" style="width:0%"></div></div>
+                </div>
+                <div class="attr-row">
+                    <div class="attr-name"><span>智商</span><span id="intelVal">0</span></div>
+                    <div class="bar-bg"><div class="bar-fill bar-intel" id="barIntel" style="width:0%"></div></div>
+                </div>
+                <div class="attr-row">
+                    <div class="attr-name"><span>体力</span><span id="energyVal">0</span></div>
+                    <div class="bar-bg"><div class="bar-fill bar-energy" id="barEnergy" style="width:0%"></div></div>
+                </div>
+                <div class="attr-row">
+                    <div class="attr-name"><span>金钱</span><span id="moneyVal">0</span></div>
+                    <div class="bar-bg"><div class="bar-fill bar-money" id="barMoney" style="width:0%"></div></div>
+                </div>
+            </div>
+            <div class="text-area" id="msgBox"></div>
+            <div class="btn-group" id="btnGroup1">
+                <button id="okBtn">满意，输入666</button>
+                <button id="rerollBtn">不满意，重新生成</button>
+            </div>
+            <div class="btn-group hide" id="btnGroup2">
+                <button id="yesBtn">✅ 选择【是】</button>
+                <button id="noBtn">❌ 选择【否】</button>
+            </div>
+            <div class="btn-group hide" id="btnGroup3">
+                <button id="exportLogBtn">📄 导出日志文件</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// 全局变量
+let name = "";
+let age = "";
+let emotion = 0;
+let intelligence = 0;
+let energy = 0;
+let money = 0;
+let log = [];
+let maxRetries = 3;
+let usedRetries = 0;
+let events = [];
+let currentEventIndex = 0;
+
+// 事件数据（和你Python原版完全一致）
+const rawEvents = [
+    {"百团大战上，你看到有个摊位的学姐特别好看，你是否去跟她打招呼？":[+5,-7,+5,+0,-8,-3,-6,+0]},
+    {"早八是高数课，内容很枯燥，你是否要自律一次认真学习？":[-1,+5,-3,+1,-2,-3,+2,-1]},
+    {"打王者匹配到神人队友，你是否要开麦真实他？":[+3, -2,-4,+0,-3,-2,+4,+0]},
+    {"许久未见的老朋友突然约你吃饭，你是否赴宴？":[+4,+0,+3,-5,-3, +0,+0,+0]},
+    {"期末周凌晨两点，室友突然开始大声背书，你是否要加入内卷？": [+2, +6, -5, -1, -3, +1, +3, +2]},
+    {"学校食堂新开了网红餐厅，饭点排队需要一小时，你是否要冲？": [+6, -1, -4, -2, +1, +1, +1, -1]},
+    {"辅导员发来私信，有个吃力不讨好的班干部空缺，你是否接受？": [-5, +4, -6, +3, +2, +1, +4, +2]},
+    {"月底生活费见底，朋友约你出去吃火锅，你是否要拒绝？": [-8, +1, +3, +5, +3, -1, -2, -4]},
+    {"选修课老师说要小组做PPT展示，你是否要当组长挑大梁？": [-3, +8, -8, +1, +2, +4, +4, +2]},
+    {"社团举办联谊晚会，有个心动嘉宾去，你是否要鼓起勇气去表白？":[+7, -2, +5, -3, -7, +0, -5, +0]},
+    {"有学长学姐邀请你加入兼职刷单群，声称只要交一点报名费就可轻松赚钱，你是否加入？":[-8, -8, -8, -10, +6, +6, +6, +2]}
+];
+
+// DOM元素
+const startPanel = document.getElementById('startPanel');
+const gamePanel = document.getElementById('gamePanel');
+const nameInput = document.getElementById('nameInput');
+const ageInput = document.getElementById('ageInput');
+const startBtn = document.getElementById('startBtn');
+const msgBox = document.getElementById('msgBox');
+const retryTip = document.getElementById('retryTip');
+const okBtn = document.getElementById('okBtn');
+const rerollBtn = document.getElementById('rerollBtn');
+const btnGroup1 = document.getElementById('btnGroup1');
+const btnGroup2 = document.getElementById('btnGroup2');
+const btnGroup3 = document.getElementById('btnGroup3');
+const yesBtn = document.getElementById('yesBtn');
+const noBtn = document.getElementById('noBtn');
+const exportLogBtn = document.getElementById('exportLogBtn');
+
+// 随机分配属性函数（原版逻辑）
+function fenpei(){
+    let total_points = 30;
+    let cuts = [];
+    while(cuts.length <3){
+        let r = Math.floor(Math.random()*(total_points-1)) +1;
+        if(!cuts.includes(r)) cuts.push(r);
+    }
+    cuts.push(0);
+    cuts.sort((a,b)=>a-b);
+    let e = cuts[1] - cuts[0];
+    let i = cuts[2] - cuts[1];
+    let en = cuts[3] - cuts[2];
+    let m = total_points - cuts[3];
+    return [e,i,en,m];
+}
+
+// 更新可视化进度条
+function renderAttr(){
+    document.getElementById('emotionVal').innerText = emotion;
+    document.getElementById('intelVal').innerText = intelligence;
+    document.getElementById('energyVal').innerText = energy;
+    document.getElementById('moneyVal').innerText = money;
+    // 按最大60做条形比例，方便看
+    const maxShow = 60;
+    document.getElementById('barEmotion').style.width = `${Math.max(0,Math.min(100, emotion/maxShow*100))}%`;
+    document.getElementById('barIntel').style.width = `${Math.max(0,Math.min(100, intelligence/maxShow*100))}%`;
+    document.getElementById('barEnergy').style.width = `${Math.max(0,Math.min(100, energy/maxShow*100))}%`;
+    document.getElementById('barMoney').style.width = `${Math.max(0,Math.min(100, money/maxShow*100))}%`;
+}
+
+// 刷新生成角色
+function refreshChar(){
+    [emotion, intelligence, energy, money] = fenpei();
+    renderAttr();
+    const text = `您的初始值：\n情绪：${emotion}，智商：${intelligence}，体力：${energy}，金钱：${money}`;
+    msgBox.innerText = text;
+    log.push(text);
+}
+
+// 开始游戏
+startBtn.onclick = ()=>{
+    name = nameInput.value.trim();
+    age = ageInput.value.trim();
+    if(!name){alert("请输入姓名！");return;}
+    if(!age || Number(age)<=0){alert("请输入有效年龄！");return;}
+    log.push(`您的名字${name}`);
+    log.push(`您的年龄${age}`);
+    startPanel.classList.add('hide');
+    gamePanel.classList.remove('hide');
+    msgBox.innerText = `欢迎${name}进入游戏！`;
+    log.push(`欢迎${name}进入游戏！`);
+    setTimeout(()=>{
+        refreshChar();
+        updateRetryTip();
+    },600);
+}
+
+// 更新剩余次数提示
+function updateRetryTip(){
+    let remain = maxRetries - usedRetries;
+    retryTip.innerText = `您当前还剩 ${remain} 次重刷角色的机会`;
+    if(remain <=0){
+        rerollBtn.disabled = true;
+    }
+}
+
+// 不满意重刷
+rerollBtn.onclick = ()=>{
+    usedRetries +=1;
+    refreshChar();
+    updateRetryTip();
+    if(usedRetries >= maxRetries){
+        retryTip.innerText = "您的3次重刷机会已全部用完！";
+    }
+}
+
+// 确认角色，进入事件
+okBtn.onclick = ()=>{
+    btnGroup1.classList.add('hide');
+    btnGroup2.classList.remove('hide');
+    // 洗牌事件，只取前5个
+    events = [...rawEvents].sort(()=>Math.random()-0.5).slice(0,5);
+    currentEventIndex = 0;
+    showEvent();
+}
+
+// 展示事件
+function showEvent(){
+    const item = events[currentEventIndex];
+    const [eventText, deltaArr] = Object.entries(item)[0];
+    msgBox.innerText = `您触发了第${currentEventIndex+1}次事件：\n${eventText}`;
+    log.push(`您触发了第${currentEventIndex+1}次事件：${eventText}`);
+}
+
+// 选择是
+yesBtn.onclick = ()=>{
+    const item = events[currentEventIndex];
+    const [_, delta] = Object.entries(item)[0];
+    emotion += delta[0];
+    intelligence += delta[1];
+    energy += delta[2];
+    money += delta[3];
+    afterSelect();
+}
+// 选择否
+noBtn.onclick = ()=>{
+    const item = events[currentEventIndex];
+    const [_, delta] = Object.entries(item)[0];
+    emotion += delta[4];
+    intelligence += delta[5];
+    energy += delta[6];
+    money += delta[7];
+    afterSelect();
+}
+
+function afterSelect(){
+    renderAttr();
+    const info = `第${currentEventIndex+1}次选择后:\n情绪值：${emotion}\n智力值：${intelligence}\n体力值：${energy}\n资产值：${money}`;
+    msgBox.innerText = info;
+    log.push(info);
+    currentEventIndex++;
+    if(currentEventIndex >=5){
+        setTimeout(gameEnd, 1200);
+    }else{
+        setTimeout(showEvent,1200);
+    }
+}
+
+// 结算
+function gameEnd(){
+    btnGroup2.classList.add('hide');
+    btnGroup3.classList.remove('hide');
+    let out = "MVP胜利结算🎆\n";
+    out += `情绪值：${emotion}\n智力值：${intelligence}\n体力值：${energy}\n资产值：${money}\n`;
+    log.push("MVP胜利结算🎆");
+    log.push(`情绪：${emotion}，智商：${intelligence},体力：${energy}，金钱：${money}`);
+    const score = emotion + intelligence + energy + money;
+    if(score>66){
+        out += "您简直是人生赢家！\n";
+        log.push("您的总分很高，您简直是人生赢家！");
+    }
+    if(emotion <=0){
+        out += "系统判断：您的情绪低落，快去做点开心的事情吧！\n";
+        log.push("系统判断：你的情绪低落，快去做点开心的事情吧！");
+    }
+    if(intelligence <=0){
+        out += "系统判断：您的智力低下，快去多读点书吧！\n";
+        log.push("系统判断：您的智力低下，快去多读点书吧！");
+    }
+    if(energy <=0){
+        out += "系统判断：您的体能太差了，快去锻炼身体吧！\n";
+        log.push("系统判断：您的体能太差了，快去锻炼身体吧！");
+    }
+    if(money <=0){
+        out += "系统判断：您的资产已经透支，快去搬砖搞钱吧\n";
+        log.push("系统判断：您的资产已经透支，快去搬砖搞钱吧");
+    }
+    out += "恭喜您，游戏结束!";
+    msgBox.innerText = out;
+}
+
+// 导出日志txt
+exportLogBtn.onclick = ()=>{
+    const blob = new Blob([log.join("\n")], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    const d = new Date();
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    a.download = `${name}的人生模拟器_${dateStr}.txt`;
+    a.click();
+}
+</script>
+</body>
+</html>
