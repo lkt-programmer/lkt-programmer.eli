@@ -423,6 +423,7 @@ exportLogBtn.onclick = ()=>{
     const d = new Date();
     const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     a.download = `${name}的人生模拟器_${dateStr}.txt`;
+    
     a.click();
 }
 </script>
