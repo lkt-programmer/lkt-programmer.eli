@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>姻缘签 · 两人缘分测试</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23c22f2a' d='M12 21C5 14.5 2 11 2 7.5 2 4.5 4.5 2 7.5 2c1.9 0 3.5 1 4.5 2.6C13 3 14.6 2 16.5 2 19.5 2 22 4.5 22 7.5c0 3.5-3 7-10 13.5z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap">
+<!-- ===== 视觉基座：宣纸 + 朱砂 + 铜金 ===== -->
+<style>
+:root{
+  --paper:#f5eddd;
+  --paper-2:#fbf5e8;
+  --ink:#2b2320;
+  --ink-60:rgba(43,35,32,.62);
+  --ink-35:rgba(43,35,32,.35);
+  --verm:#c22f2a;
+  --verm-dark:#a82622;
+  --gold:#8a6414;
+  --gold-45:rgba(138,100,20,.45);
+  --kai:"Ma Shan Zheng","Kaiti SC","STKaiti","KaiTi",serif;
+  --serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(194,47,42,.05), transparent 55%),
+    var(--paper);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.7;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:24px 16px 44px;
+}
+/* 纸面颗粒 */
+body::after{
+  content:"";position:fixed;inset:0;z-index:50;pointer-events:none;
+  opacity:.05;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* 漂浮红心画布 */
+#hearts{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* 庚帖卡 */
+.certificate{
+  position:relative;z-index:1;
+  width:min(560px,100%);
+  background:var(--paper-2);
+  border:1px solid rgba(43,35,32,.55);
+  box-shadow:0 1px 0 rgba(43,35,32,.06), 0 14px 36px rgba(43,35,32,.12);
+  padding:clamp(30px,7vw,54px) clamp(20px,6vw,46px) 30px;
+}
+.certificate::before{
+  content:"";position:absolute;inset:8px;
+  border:1px solid rgba(194,47,42,.5);pointer-events:none;
+}
+
+/* ===== 头部 ===== */
+header{text-align:center;margin-bottom:6px}
+.big-char{
+  position:relative;z-index:0;
+  display:inline-block;
+  font-family:var(--kai);font-weight:400;
+  font-size:clamp(88px,24vw,128px);line-height:1.05;
+  color:var(--verm);
+}
+.big-char::before{
+  content:"";position:absolute;inset:-8% -14%;z-index:-1;
+  border:1px solid var(--gold-45);border-radius:50%;
+}
+h1{
+  font-family:var(--kai);font-weight:400;
+  font-size:clamp(26px,6.4vw,34px);
+  letter-spacing:.14em;text-indent:.14em;
+  margin:12px 0 8px;
+}
+.tagline{
+  margin:0;font-size:13px;color:var(--ink-60);
+  letter-spacing:.42em;text-indent:.42em;
+}
+.divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:20px auto 0;color:var(--gold)}
+.d-line{width:66px;height:1px;background:var(--gold-45)}
+.d-dot{width:5px;height:5px;background:rgba(138,100,20,.7);transform:rotate(45deg)}
+
+/* ===== 牵缘台 ===== */
+#stage{
+  position:relative;
+  display:flex;justify-content:space-between;align-items:stretch;gap:14px;
+  min-height:176px;
+  margin:8px 0 4px;
+  padding:8px 2px 20px;
+}
+#threadSvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+#threadPath{fill:none;stroke:var(--verm);stroke-width:2.2;stroke-linecap:round}
+.knot{fill:var(--verm);opacity:0;transition:opacity .3s ease}
+#threadHeart{fill:var(--verm);opacity:0;transition:opacity .4s ease .1s}
+#threadSvg.drawn .knot{opacity:1}
+#threadSvg.drawn #threadHeart{opacity:1}
+.pill{
+  position:relative;z-index:1;
+  background:var(--paper-2);
+  border:1px solid rgba(194,47,42,.65);
+  box-shadow:0 2px 0 rgba(194,47,42,.12);
+  padding:16px 12px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  min-width:74px;
+}
+.vname{
+  writing-mode:vertical-rl;
+  font-family:var(--kai);font-weight:400;
+  font-size:clamp(22px,5vw,28px);line-height:1.25;
+  letter-spacing:.08em;color:var(--ink);
+  min-height:2em;
+}
+.pill-label{
+  font-size:11px;color:var(--gold);
+  border:1px solid var(--gold-45);
+  padding:2px 7px;letter-spacing:.2em;text-indent:.2em;
+}
+
+/* ===== 表单 ===== */
+#form{margin:26px auto 0;text-align:center;max-width:340px}
+#form label{display:block;font-size:15px;margin-bottom:10px}
+#form input + label{margin-top:18px}
+#nameInput{
+  width:100%;
+  font-family:var(--serif);font-size:17px;
+  text-align:center;color:var(--ink);
+  padding:10px 8px;
+  border:none;border-bottom:2px solid var(--ink-35);
+  background:transparent;border-radius:0;
+}
+#nameInput:focus{outline:none;border-bottom-color:var(--verm)}
+#nameInput::placeholder{color:var(--ink-35)}
+.btn{
+  font-family:var(--kai);font-size:19px;
+  letter-spacing:.28em;text-indent:.28em;
+  color:var(--paper-2);background:var(--verm);
+  border:none;cursor:pointer;
+  padding:12px 34px;min-height:44px;
+  margin-top:20px;
+  box-shadow:0 2px 0 rgba(168,38,34,.45);
+  transition:background .15s ease,transform .05s ease;
+}
+.btn:hover{background:var(--verm-dark)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{
+  color:var(--ink);background:transparent;
+  border:1px solid rgba(43,35,32,.45);
+  box-shadow:none;
+}
+.btn.ghost:hover{background:rgba(43,35,32,.05)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.form-hint{font-size:13px;color:var(--verm);margin:12px 0 0}
+
+/* ===== 结果 ===== */
+#result{margin:24px auto 0;text-align:center}
+#result.show{animation:rise .5s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.score-label{font-size:14px;color:var(--ink-60);letter-spacing:.2em;text-indent:.2em;margin:0 0 2px}
+.score{font-feature-settings:"tnum";font-weight:600;color:var(--gold);line-height:1.1}
+#scoreNum{font-size:clamp(68px,20vw,104px)}
+.score-unit{font-size:20px;margin-left:6px;color:var(--ink-60);font-weight:400}
+.seal{
+  position:relative;
+  display:inline-grid;grid-template-columns:repeat(2,auto);gap:2px 8px;
+  background:var(--verm);color:var(--paper-2);
+  font-family:var(--kai);font-weight:400;
+  font-size:clamp(22px,6vw,30px);line-height:1.15;
+  padding:10px 14px;margin:10px 0 8px;
+  transform:rotate(-7deg);border-radius:3px;
+  box-shadow:0 3px 10px rgba(43,35,32,.2);
+  opacity:0;
+}
+.seal::after{content:"";position:absolute;inset:4px;border:1px solid rgba(245,237,221,.55);pointer-events:none}
+.seal b{font-weight:400}
+.seal.stamped{animation:stamp .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes stamp{
+  0%{opacity:0;transform:rotate(-16deg) scale(2.3)}
+  55%{opacity:1;transform:rotate(-7deg) scale(.92)}
+  100%{opacity:1;transform:rotate(-7deg) scale(1)}
+}
+#verdictText{font-size:16px;margin:6px 0 0;opacity:0;transition:opacity .6s ease .15s}
+#verdictText.show{opacity:1}
+#againBtn{margin-top:18px}
+
+footer{
+  margin-top:30px;text-align:center;
+  font-size:12px;color:var(--ink-60);
+}
+
+@media (min-width:768px){
+  body{padding:48px 24px}
+  #stage{min-height:196px}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+  .seal,#verdictText{opacity:1}
+}
+</style>
+</head>
+<body>
+<canvas id="hearts" aria-hidden="true"></canvas>
+
+<main class="certificate">
+  <!-- ===== 视图：签头 ===== -->
+  <header>
+    <span class="big-char" aria-hidden="true">缘</span>
+    <h1>月老姻缘签</h1>
+    <p class="tagline">红线一牵 · 缘分立见</p>
+    <div class="divider" aria-hidden="true"><span class="d-line"></span><span class="d-dot"></span><span class="d-line"></span></div>
+  </header>
+
+  <!-- ===== 视图：牵缘台（红线区） ===== -->
+  <section id="stage" hidden aria-label="牵缘台">
+    <svg id="threadSvg" aria-hidden="true">
+      <path id="threadPath" d=""/>
+      <circle class="knot" id="knotA" r="3.2"/>
+      <circle class="knot" id="knotB" r="3.2"/>
+      <path id="threadHeart" d="M0,10 C-10,2 -8,-10 0,-3 C8,-10 10,2 0,10"/>
+    </svg>
+    <div class="pill">
+      <span class="vname" id="nameA">名</span>
+      <span class="pill-label">君</span>
+    </div>
+    <div class="pill">
+      <span class="vname" id="nameB">名</span>
+      <span class="pill-label">卿</span>
+    </div>
+  </section>
+
+  <!-- ===== 视图：署名求签 ===== -->
+  <form id="form" autocomplete="off">
+    <label for="boyInput">男方姓名</label>
+    <input id="boyInput" maxlength="10" placeholder="他的名字" autocomplete="off">
+    <label for="girlInput">女方姓名</label>
+    <input id="girlInput" maxlength="10" placeholder="她的名字" autocomplete="off">
+    <button class="btn" type="submit">牵红线</button>
+    <p class="form-hint" id="formHint" hidden>请先写下两个人的名字，月老才能牵线</p>
+  </form>
+
+  <!-- ===== 视图：签文 ===== -->
+  <section id="result" hidden aria-live="polite">
+    <p class="score-label" id="scoreLabel">你们的缘分指数</p>
+    <div class="score"><span id="scoreNum">0</span><span class="score-unit">分</span></div>
+    <div><span class="seal" id="seal"></span></div>
+    <p id="verdictText"></p>
+    <button class="btn ghost" id="againBtn" type="button">再牵一次</button>
+  </section>
+
+  <footer>缘分指数纯属娱乐 · 真正的缘分，靠自己争取</footer>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var form = document.getElementById('form');
+  var boyInput = document.getElementById('boyInput');
+  var girlInput = document.getElementById('girlInput');
+  var formHint = document.getElementById('formHint');
+  var stage = document.getElementById('stage');
+  var svg = document.getElementById('threadSvg');
+  var path = document.getElementById('threadPath');
+  var knotA = document.getElementById('knotA');
+  var knotB = document.getElementById('knotB');
+  var threadHeart = document.getElementById('threadHeart');
+  var nameA = document.getElementById('nameA');
+  var nameB = document.getElementById('nameB');
+  var result = document.getElementById('result');
+  var scoreNum = document.getElementById('scoreNum');
+  var scoreLabel = document.getElementById('scoreLabel');
+  var seal = document.getElementById('seal');
+  var verdictText = document.getElementById('verdictText');
+  var againBtn = document.getElementById('againBtn');
+  var pills = stage.querySelectorAll('.pill');
+
+  var busy = false;
+  var threadDrawn = false;
+  var num = 0;
+
+  /* 与原 Python 程序完全一致的判定 */
+  function verdictFor(n){
+    if (n > 85) return { seal: '天作之合', text: '你们很有缘分，天作之合' };
+    if (n > 60) return { seal: '再接再厉', text: '你们缘分还行，继续努力' };
+    return { seal: '有缘无分', text: '你们没有缘分，洗洗睡吧' };
+  }
+
+  /* ===== 红线几何：两帖之间的垂弧 ===== */
+  function setupThread(){
+    var rS = stage.getBoundingClientRect();
+    var rA = pills[0].getBoundingClientRect();
+    var rB = pills[1].getBoundingClientRect();
+    var w = rS.width, h = rS.height;
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    var x1 = rA.right - rS.left - 2;
+    var y1 = rA.top + rA.height / 2 - rS.top;
+    var x2 = rB.left - rS.left + 2;
+    var y2 = rB.top + rB.height / 2 - rS.top;
+    var dip = Math.min(84, h * 0.34);
+    var dx = x2 - x1;
+    path.setAttribute('d',
+      'M ' + x1 + ' ' + y1 +
+      ' C ' + (x1 + dx * 0.28) + ' ' + (y1 + dip) +
+      ', ' + (x2 - dx * 0.28) + ' ' + (y2 + dip) +
+      ', ' + x2 + ' ' + y2);
+    knotA.setAttribute('cx', x1); knotA.setAttribute('cy', y1);
+    knotB.setAttribute('cx', x2); knotB.setAttribute('cy', y2);
+    var len = path.getTotalLength();
+    var mid = path.getPointAtLength(len / 2);
+    threadHeart.setAttribute('transform', 'translate(' + mid.x + ',' + mid.y + ') scale(1.15)');
+    return len;
+  }
+
+  function showThreadInstant(){
+    var len = setupThread();
+    path.style.transition = 'none';
+    path.style.strokeDasharray = 'none';
+    path.style.strokeDashoffset = '0';
+    svg.classList.add('drawn');
+    threadDrawn = true;
+    return len;
+  }
+
+  function animateThread(done){
+    var len = setupThread();
+    path.style.transition = 'none';
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        path.style.transition = 'stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1)';
+        path.style.strokeDashoffset = '0';
+        svg.classList.add('drawn');
+        threadDrawn = true;
+        setTimeout(done, 1180);
+      });
+    });
+  }
+
+  /* ===== 数字揭示（对应原程序 print 后的停顿） ===== */
+  function countUp(el, target, dur, done){
+    if (reduced){ el.textContent = target; done(); return; }
+    var t0 = performance.now();
+    (function tick(t){
+      var p = Math.min(1, (t - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * e);
+      if (p < 1) requestAnimationFrame(tick); else done();
+    })(t0);
+  }
+
+  function stampIt(){
+    var v = verdictFor(num);
+    seal.innerHTML = '';
+    for (var i = 0; i < v.seal.length; i++){
+      var b = document.createElement('b');
+      b.textContent = v.seal.charAt(i);
+      seal.appendChild(b);
+    }
+    seal.classList.add('stamped');
+    verdictText.textContent = v.text;
+    verdictText.classList.add('show');
+    burst(num);
+    busy = false;
+  }
+
+  function showResult(){
+    result.hidden = false;
+    result.classList.add('show');
+    countUp(scoreNum, num, 1500, function(){
+      setTimeout(stampIt, 420);
+    });
+  }
+
+  function resetResult(){
+    result.hidden = true;
+    result.classList.remove('show');
+    scoreNum.textContent = '0';
+    seal.classList.remove('stamped');
+    seal.innerHTML = '';
+    verdictText.classList.remove('show');
+    verdictText.textContent = '';
+  }
+
+  /* ===== 主流程 ===== */
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (busy) return;
+    var boy = boyInput.value.trim();
+    var girl = girlInput.value.trim();
+    if (!boy || !girl){
+      formHint.hidden = false;
+      if (!boy) boyInput.focus(); else girlInput.focus();
+      return;
+    }
+    formHint.hidden = true;
+    busy = true;
+    num = Math.floor(Math.random() * 100) + 1;   // random.randint(1,100)
+    nameA.textContent = boy;
+    nameB.textContent = girl;
+    scoreLabel.textContent = boy + ' 与 ' + girl + '的缘分指数';
+    resetResult();
+    form.hidden = true;
+    stage.hidden = false;
+    svg.classList.remove('drawn');
+    path.style.transition = 'none';
+    path.setAttribute('d', '');
+    threadDrawn = false;
+    requestAnimationFrame(function(){
+      if (reduced){
+        showThreadInstant();
+        result.hidden = false;
+        result.classList.add('show');
+        scoreNum.textContent = num;
+        stampIt();
+        return;
+      }
+      animateThread(function(){
+        setTimeout(showResult, 320);              // time.sleep(1) 的仪式感
+      });
+    });
+  });
+
+  againBtn.addEventListener('click', function(){
+    stage.hidden = true;
+    form.hidden = false;
+    resetResult();
+    svg.classList.remove('drawn');
+    path.style.transition = 'none';
+    path.setAttribute('d', '');
+    threadDrawn = false;
+    busy = false;
+    boyInput.focus();
+    boyInput.select();
+  });
+
+  /* ===== 漂浮红心（氛围层） ===== */
+  var cvs = document.getElementById('hearts');
+  var ctx = cvs.getContext('2d');
+  var W = 0, H = 0;
+  var ambient = [], bursts = [];
+
+  function resizeCvs(){
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    cvs.width = W * dpr; cvs.height = H * dpr;
+    cvs.style.width = W + 'px'; cvs.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function newAmb(fromBottom){
+    return {
+      x: Math.random() * W,
+      y: fromBottom ? H + 20 + Math.random() * 60 : Math.random() * H,
+      s: 6 + Math.random() * 10,
+      a: 0.06 + Math.random() * 0.12,
+      v: 0.2 + Math.random() * 0.35,
+      ph: Math.random() * Math.PI * 2,
+      gold: Math.random() < 0.15
+    };
+  }
+
+  function initAmbient(){
+    ambient = [];
+    if (reduced) return;
+    var n = Math.round(Math.min(16, Math.max(10, W / 90)));
+    for (var i = 0; i < n; i++) ambient.push(newAmb(false));
+  }
+
+  function heartPath(x, y, s){
+    ctx.beginPath();
+    ctx.moveTo(x, y + 0.5 * s);
+    ctx.bezierCurveTo(x - 0.5 * s, y + 0.1 * s, x - 0.4 * s, y - 0.7 * s, x, y - 0.15 * s);
+    ctx.bezierCurveTo(x + 0.4 * s, y - 0.7 * s, x + 0.5 * s, y + 0.1 * s, x, y + 0.5 * s);
+    ctx.closePath();
+  }
+
+  function burst(score){
+    if (reduced) return;
+    var r = scoreNum.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    var count = score > 85 ? 42 : (score > 60 ? 26 : 16);
+    for (var i = 0; i < count; i++){
+      var ang = Math.random() * Math.PI * 2;
+      var sp = 1.2 + Math.random() * 3.2;
+      bursts.push({
+        x: cx, y: cy,
+        vx: Math.cos(ang) * sp,
+        vy: Math.sin(ang) * sp - 1.6,
+        s: 5 + Math.random() * 9,
+        a: 0.85,
+        dec: 0.008 + Math.random() * 0.012,
+        gold: Math.random() < 0.22
+      });
+    }
+  }
+
+  function tick(t){
+    ctx.clearRect(0, 0, W, H);
+    var i, p;
+    for (i = 0; i < ambient.length; i++){
+      p = ambient[i];
+      p.y -= p.v;
+      p.x += Math.sin(t / 1300 + p.ph) * 0.3;
+      if (p.y < -24) Object.assign(p, newAmb(true));
+      ctx.globalAlpha = p.a;
+      ctx.fillStyle = p.gold ? '#8a6414' : '#c22f2a';
+      heartPath(p.x, p.y, p.s);
+      ctx.fill();
+    }
+    for (i = bursts.length - 1; i >= 0; i--){
+      p = bursts[i];
+      p.vy += 0.05;
+      p.x += p.vx; p.y += p.vy;
+      p.a -= p.dec;
+      if (p.a <= 0 || p.y > H + 40){ bursts.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.max(0, p.a);
+      ctx.fillStyle = p.gold ? '#8a6414' : '#c22f2a';
+      heartPath(p.x, p.y, p.s);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(tick);
+  }
+
+  window.addEventListener('resize', function(){
+    resizeCvs();
+    initAmbient();
+    if (threadDrawn && !stage.hidden) showThreadInstant();
+  });
+
+  resizeCvs();
+  initAmbient();
+  if (!reduced) requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
